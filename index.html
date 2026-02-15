@@ -3,80 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لیگ ریاضی | نوابغ ایران</title>
+    <title>لیگ ریاضی نوابغ | پریسا رستمی</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@300;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div id="particle-container"></div>
+    <div class="quantum-bg"></div>
 
-    <div class="main-wrapper">
-        <section id="home-screen" class="screen active">
-            <div class="hero-section">
-                <h1 class="main-title">لیگ ریاضی <span class="neon-text">نهم</span></h1>
-                <p class="dev-name">توسعه دهنده: پریسا رستمی</p>
+    <div class="game-container">
+        <section id="menu-screen" class="screen active">
+            <div class="header-logo">
+                <h1 class="glitch" data-text="لیگ ریاضی">لیگ ریاضی <span class="neon-text">نهم</span></h1>
+                <p class="subtitle">توسعه هوشمند: پریسا رستمی</p>
             </div>
 
-            <div class="records-container">
-                <div class="record-card">🥇 آسان: <span id="record-easy">0</span></div>
-                <div class="record-card">🥈 متوسط: <span id="record-med">0</span></div>
-                <div class="record-card">🥉 سخت: <span id="record-hard">0</span></div>
+            <div class="stats-panel">
+                <div class="stat-card">
+                    <span class="stat-label">آسان</span>
+                    <span class="stat-value" id="best-easy">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">متوسط</span>
+                    <span class="stat-value" id="best-med">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">پیشرفته</span>
+                    <span class="stat-value" id="best-hard">0</span>
+                </div>
             </div>
 
-            <div class="profile-mini">
-                <span>سطح شما: <b id="user-rank">مبتدی</b></span>
-                <div class="xp-bar"><div id="xp-fill"></div></div>
+            <div class="rank-box">
+                <div class="rank-info">
+                    <span>رتبه: <b id="rank-name">در حال محاسبه...</b></span>
+                    <span id="xp-text">0 / 500 XP</span>
+                </div>
+                <div class="xp-bar-container">
+                    <div id="xp-fill" class="xp-fill"></div>
+                </div>
             </div>
 
-            <button class="play-trigger" onclick="openModeSelection()">شروع چالش</button>
-            <button class="btn-secondary" onclick="showHelp()">راهنمای بازی</button>
+            <div class="action-area">
+                <button class="main-btn pulse" onclick="openModes()">شروع چالش</button>
+                <div class="sub-buttons">
+                    <button class="icon-btn" onclick="showHelp()">راهنما 💡</button>
+                </div>
+            </div>
         </section>
 
-        <div id="mode-modal" class="overlay">
-            <div class="modal-box">
-                <h2>انتخاب سطح نبرد</h2>
-                <div class="mode-grid">
-                    <button class="m-btn m-easy" onclick="startGame('easy')">آسان <span>(پایه ۱-۳)</span></button>
-                    <button class="m-btn m-med" onclick="startGame('med')">متوسط <span>(پایه ۴-۶)</span></button>
-                    <button class="m-btn m-hard" onclick="startGame('hard')">پیشرفته <span>(پایه ۷-۹)</span></button>
+        <div id="mode-overlay" class="overlay">
+            <div class="glass-modal">
+                <h2>انتخاب دشواری نبرد</h2>
+                <div class="mode-list">
+                    <button class="mode-opt e" onclick="startLevel('easy')">
+                        <b>آسان</b> <span>اعداد صحیح و چهار عمل اصلی</span>
+                    </button>
+                    <button class="mode-opt m" onclick="startLevel('med')">
+                        <b>متوسط</b> <span>معادلات و اولویت عملیات</span>
+                    </button>
+                    <button class="mode-opt h" onclick="startLevel('hard')">
+                        <b>پیشرفته</b> <span>توان، رادیکال و هندسه نهم</span>
+                    </button>
                 </div>
-                <button class="close-btn" onclick="closeModeSelection()">برگشت</button>
+                <button class="close-link" onclick="closeModes()">انصراف</button>
             </div>
         </div>
 
         <section id="game-screen" class="screen">
-            <div class="game-hud">
-                <div class="hud-box">💎 سکه: <span id="game-coins">0</span></div>
-                <div class="hud-box" id="heart-container">❤️❤️❤️</div>
-                <div class="hud-box">امتیاز: <span id="game-score">0</span></div>
+            <div class="hud">
+                <div class="hud-item">💎 <span id="coins">0</span></div>
+                <div class="hud-item hearts" id="hearts">❤️❤️❤️</div>
+                <div class="hud-item">امتیاز: <span id="score">0</span></div>
             </div>
 
-            <div class="progress-wrap">
-                <div id="time-bar"></div>
+            <div class="timer-container">
+                <div id="timer-bar" class="timer-fill"></div>
             </div>
 
-            <div class="question-container">
-                <div id="question-text" dir="ltr"></div>
+            <div class="question-box" id="q-box">
+                <div id="q-text" dir="ltr"></div>
             </div>
 
-            <div id="options-grid" class="options-layout"></div>
+            <div class="answers-grid" id="ans-grid"></div>
 
-            <div class="power-bar">
-                <button id="p-freeze" onclick="usePower('freeze')">❄️ انجماد زمان (۳۰ سکه)</button>
-                <button id="p-heart" onclick="usePower('life')">🛡️ احیای قلب (۵۰ سکه)</button>
+            <div class="shop-bar">
+                <button id="buy-time" onclick="shop('time')">❄️ توقف زمان (۳۰ سکه)</button>
+                <button id="buy-life" onclick="shop('life')">🛡️ احیای قلب (۵۰ سکه)</button>
             </div>
         </section>
 
-        <section id="result-screen" class="screen">
+        <section id="end-screen" class="screen">
             <div class="result-card">
-                <h2 id="result-status">پایان زمان!</h2>
-                <div class="score-display">
+                <h2 id="end-msg">وقت تمام!</h2>
+                <div class="final-score-box">
                     <small>امتیاز نهایی</small>
-                    <h1 id="final-score">0</h1>
+                    <h1 id="f-score">0</h1>
                 </div>
-                <p id="rank-up-msg"></p>
-                <button class="play-trigger" onclick="location.reload()">تلاش دوباره</button>
+                <button class="main-btn" onclick="location.reload()">تلاش دوباره</button>
             </div>
         </section>
     </div>
