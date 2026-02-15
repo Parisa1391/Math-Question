@@ -1,89 +1,98 @@
 :root {
+    --bg: #0f172a;
     --primary: #00f2ff;
-    --accent: #7000ff;
-    --bg: #050505;
-    --card: rgba(20, 20, 25, 0.9);
+    --accent: #f43f5e;
+    --glass: rgba(255, 255, 255, 0.05);
+    --font-math: 'Vazirmatn', sans-serif;
 }
 
-* { box-sizing: border-box; font-family: 'Vazirmatn', sans-serif; }
-
+* { box-sizing: border-box; outline: none; }
 body {
     background: var(--bg);
     color: white;
+    font-family: 'Vazirmatn', sans-serif;
     margin: 0;
+    overflow: hidden;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
 }
 
-/* پس زمینه ستاره ای */
-.stars-container {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-    background: radial-gradient(circle at center, #111 0%, #000 100%);
-}
+#particle-container { position: fixed; width: 100%; height: 100%; z-index: -1; }
 
-.app-card {
-    width: 95%; max-width: 450px;
-    background: var(--card);
+.main-wrapper {
+    width: 90%; max-width: 450px;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(20px);
     border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 30px;
-    padding: 25px;
-    box-shadow: 0 0 40px rgba(0, 242, 255, 0.1);
+    border-radius: 40px;
+    padding: 30px;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
     position: relative;
 }
 
-.screen { display: none; flex-direction: column; gap: 20px; animation: slideIn 0.4s ease; }
+.screen { display: none; flex-direction: column; gap: 20px; animation: fadeIn 0.4s; }
 .screen.active { display: flex; }
 
-h1 { font-family: 'Lalezar'; font-size: 2.5rem; text-align: center; margin: 0; }
-.glow-text span { color: var(--primary); text-shadow: 0 0 15px var(--primary); }
+.main-title { font-family: 'Lalezar'; font-size: 3rem; text-align: center; margin: 0; }
+.neon-text { color: var(--primary); text-shadow: 0 0 20px var(--primary); }
+.dev-name { text-align: center; opacity: 0.6; font-size: 0.8rem; margin-top: -10px; }
 
-.author { text-align: center; font-size: 0.8rem; opacity: 0.6; margin-top: -10px; }
+.records-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.record-card { background: var(--glass); padding: 10px; border-radius: 15px; font-size: 0.7rem; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
 
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 15px 0; }
-.stat-item { background: rgba(255,255,255,0.05); padding: 10px 5px; border-radius: 12px; font-size: 0.75rem; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-
-.mode-btn {
-    border: none; padding: 15px; border-radius: 15px; color: white; font-weight: bold; cursor: pointer;
-    transition: 0.3s; font-size: 1rem; margin-bottom: 10px;
+.play-trigger {
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: white; border: none; padding: 20px; border-radius: 20px;
+    font-family: 'Lalezar'; font-size: 1.8rem; cursor: pointer; transition: 0.3s;
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
 }
-.easy { background: #00b894; }
-.med { background: #0984e3; }
-.hard { background: #d63031; }
-.mode-btn:hover { transform: scale(1.02); filter: brightness(1.2); }
+.play-trigger:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(37, 99, 235, 0.5); }
 
-/* بخش سوال */
-.question-area {
-    background: #000; height: 120px; border-radius: 20px;
+/* مودال انتخاب سطح */
+.overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+    display: none; justify-content: center; align-items: center; z-index: 100;
+    border-radius: 40px;
+}
+.modal-box { width: 90%; text-align: center; }
+.mode-grid { display: flex; flex-direction: column; gap: 15px; margin: 20px 0; }
+.m-btn {
+    padding: 15px; border-radius: 15px; border: none; color: white;
+    font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.2s;
+}
+.m-easy { background: #10b981; }
+.m-med { background: #f59e0b; }
+.m-hard { background: #ef4444; }
+.m-btn span { display: block; font-size: 0.7rem; opacity: 0.8; }
+
+/* HUD بازی */
+.game-hud { display: flex; justify-content: space-between; font-size: 0.8rem; }
+.hud-box { background: var(--glass); padding: 5px 12px; border-radius: 50px; }
+
+.question-container {
+    background: #000; min-height: 140px; border-radius: 25px;
     display: flex; justify-content: center; align-items: center;
-    font-size: 2.2rem; font-weight: 900; color: var(--primary);
-    border: 2px solid var(--accent);
+    font-size: 1.8rem; font-weight: 900; color: var(--primary);
+    border: 2px solid var(--primary); padding: 20px; text-align: center;
 }
 
-/* حل مشکل چپ به راست ریاضی */
-#math-question {
-    direction: ltr !important;
-    display: inline-block;
+.options-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.opt-btn {
+    padding: 20px; border-radius: 18px; border: none; background: white;
+    color: #0f172a; font-size: 1.4rem; font-weight: bold; cursor: pointer;
 }
 
-.answers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-.ans-btn {
-    background: white; color: black; border: none; padding: 20px; border-radius: 15px;
-    font-size: 1.4rem; font-weight: bold; cursor: pointer; transition: 0.2s;
+.power-bar { display: flex; gap: 10px; }
+.power-bar button {
+    flex: 1; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
+    background: var(--glass); color: white; font-size: 0.7rem; cursor: pointer;
 }
-.ans-btn:active { transform: scale(0.9); }
+.power-bar button:disabled { opacity: 0.3; }
 
-.timer-box { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
-.timer-line { width: 100%; height: 100%; background: var(--primary); }
+.progress-wrap { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; }
+#time-bar { height: 100%; width: 100%; background: var(--primary); transition: width 0.1s linear; }
 
-.game-header { display: flex; justify-content: space-between; font-weight: bold; }
-.info-tag { background: var(--accent); padding: 5px 15px; border-radius: 50px; }
-
-/* مودال */
-.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; }
-.modal-content { background: #222; padding: 30px; border-radius: 20px; width: 85%; max-width: 400px; text-align: center; }
-.modal-content ul { text-align: right; font-size: 0.9rem; line-height: 1.8; }
-
-@keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
