@@ -3,73 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سوپر لیگ ریاضی | پریسا رستمی</title>
+    <title>لیگ ریاضی | نوابغ ایران</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@300;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div class="stars-container" id="stars"></div>
+    <div id="particle-container"></div>
 
-    <div class="app-card">
-        <section id="menu-screen" class="screen active">
-            <h1 class="glow-text">لیگ ریاضی <span>نهم</span></h1>
-            <p class="author">توسعه دهنده: پریسا رستمی</p>
-            
-            <div class="stats-grid">
-                <div class="stat-item">🥇 آسان: <span id="best-easy">0</span></div>
-                <div class="stat-item">🥇 متوسط: <span id="best-med">0</span></div>
-                <div class="stat-item">🥇 سخت: <span id="best-hard">0</span></div>
+    <div class="main-wrapper">
+        <section id="home-screen" class="screen active">
+            <div class="hero-section">
+                <h1 class="main-title">لیگ ریاضی <span class="neon-text">نهم</span></h1>
+                <p class="dev-name">توسعه دهنده: پریسا رستمی</p>
             </div>
 
-            <div class="mode-selector">
-                <button class="mode-btn easy" onclick="initGame('easy')">سطح ساده (پایه ۱-۳)</button>
-                <button class="mode-btn med" onclick="initGame('med')">سطح متوسط (پایه ۴-۶)</button>
-                <button class="mode-btn hard" onclick="initGame('hard')">سطح نابغه (پایه ۷-۹)</button>
+            <div class="records-container">
+                <div class="record-card">🥇 آسان: <span id="record-easy">0</span></div>
+                <div class="record-card">🥈 متوسط: <span id="record-med">0</span></div>
+                <div class="record-card">🥉 سخت: <span id="record-hard">0</span></div>
             </div>
 
-            <button class="help-link" onclick="toggleHelp(true)">راهنمای بازی</button>
+            <div class="profile-mini">
+                <span>سطح شما: <b id="user-rank">مبتدی</b></span>
+                <div class="xp-bar"><div id="xp-fill"></div></div>
+            </div>
+
+            <button class="play-trigger" onclick="openModeSelection()">شروع چالش</button>
+            <button class="btn-secondary" onclick="showHelp()">راهنمای بازی</button>
         </section>
+
+        <div id="mode-modal" class="overlay">
+            <div class="modal-box">
+                <h2>انتخاب سطح نبرد</h2>
+                <div class="mode-grid">
+                    <button class="m-btn m-easy" onclick="startGame('easy')">آسان <span>(پایه ۱-۳)</span></button>
+                    <button class="m-btn m-med" onclick="startGame('med')">متوسط <span>(پایه ۴-۶)</span></button>
+                    <button class="m-btn m-hard" onclick="startGame('hard')">پیشرفته <span>(پایه ۷-۹)</span></button>
+                </div>
+                <button class="close-btn" onclick="closeModeSelection()">برگشت</button>
+            </div>
+        </div>
 
         <section id="game-screen" class="screen">
-            <div class="game-header">
-                <div class="info-tag">امتیاز: <span id="current-score">0</span></div>
-                <div class="info-tag" id="lives-display">❤️❤️❤️</div>
+            <div class="game-hud">
+                <div class="hud-box">💎 سکه: <span id="game-coins">0</span></div>
+                <div class="hud-box" id="heart-container">❤️❤️❤️</div>
+                <div class="hud-box">امتیاز: <span id="game-score">0</span></div>
             </div>
 
-            <div class="timer-box">
-                <div class="timer-line" id="timer-line"></div>
+            <div class="progress-wrap">
+                <div id="time-bar"></div>
             </div>
 
-            <div class="question-area">
-                <div id="math-question" dir="ltr"></div>
+            <div class="question-container">
+                <div id="question-text" dir="ltr"></div>
             </div>
 
-            <div class="answers-grid" id="answers-grid"></div>
+            <div id="options-grid" class="options-layout"></div>
+
+            <div class="power-bar">
+                <button id="p-freeze" onclick="usePower('freeze')">❄️ انجماد زمان (۳۰ سکه)</button>
+                <button id="p-heart" onclick="usePower('life')">🛡️ احیای قلب (۵۰ سکه)</button>
+            </div>
         </section>
 
-        <section id="over-screen" class="screen">
-            <h2 id="over-title">وقت تمام شد!</h2>
-            <div class="final-score-circle">
-                <small>امتیاز نهایی</small>
-                <h1 id="final-score">0</h1>
+        <section id="result-screen" class="screen">
+            <div class="result-card">
+                <h2 id="result-status">پایان زمان!</h2>
+                <div class="score-display">
+                    <small>امتیاز نهایی</small>
+                    <h1 id="final-score">0</h1>
+                </div>
+                <p id="rank-up-msg"></p>
+                <button class="play-trigger" onclick="location.reload()">تلاش دوباره</button>
             </div>
-            <button class="mode-btn med" onclick="location.reload()">بازگشت به منو</button>
         </section>
-    </div>
-
-    <div id="help-modal" class="modal">
-        <div class="modal-content">
-            <h3>راهنمای بازی</h3>
-            <p>به دنیای ریاضی خوش آمدی! این برنامه برای تقویت ذهن از پایه اول تا نهم طراحی شده.</p>
-            <ul>
-                <li><strong>سطح ساده:</strong> تمرکز بر سرعت در محاسبات اولیه.</li>
-                <li><strong>سطح متوسط:</strong> ضرب و تقسیم و اولویت‌های ریاضی.</li>
-                <li><strong>سطح سخت:</strong> توان، جذر و معادلات پیچیده نهم.</li>
-            </ul>
-            <p>با هر پاسخ درست امتیاز می‌گیری و رکوردت ثبت می‌شه. مراقب قلب‌هات باش!</p>
-            <button class="mode-btn easy" onclick="toggleHelp(false)">فهمیدم</button>
-        </div>
     </div>
 
     <script src="script.js"></script>
