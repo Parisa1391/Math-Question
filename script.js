@@ -1,248 +1,161 @@
-// متغیرهای سراسری بازی
-const Game = {
+const GameState = {
+    mode: '',
     score: 0,
-    level: 1,
-    time: 10,
-    maxTime: 10,
-    timer: null,
-    isPlaying: false,
-    combo: 0,
+    lives: 3,
+    timeLeft: 0,
+    maxTime: 0,
     correctAnswer: 0,
-    freezeActive: false
+    timerObj: null
 };
 
-// دریافت بالاترین امتیاز از حافظه
-let highScore = localStorage.getItem('mathMaster_highScore') || 0;
-document.getElementById('best-score-display').innerText = highScore;
-
-// المان های صوتی (بصری)
-const screens = {
-    home: document.getElementById('home-screen'),
-    game: document.getElementById('game-screen'),
-    end: document.getElementById('game-over-screen')
+// بارگذاری رکوردها
+const loadBestScores = () => {
+    document.getElementById('best-easy').innerText = localStorage.getItem('math_easy') || 0;
+    document.getElementById('best-med').innerText = localStorage.getItem('math_med') || 0;
+    document.getElementById('best-hard').innerText = localStorage.getItem('math_hard') || 0;
 };
-
-function switchScreen(screenName) {
-    Object.values(screens).forEach(s => s.classList.remove('active'));
-    screens[screenName].classList.add('active');
-}
 
 // شروع بازی
-function startGame() {
-    Game.score = 0;
-    Game.level = 1;
-    Game.combo = 0;
-    Game.time = 15;
-    Game.maxTime = 15;
-    Game.freezeActive = false;
+function initGame(selectedMode) {
+    GameState.mode = selectedMode;
+    GameState.score = 0;
+    GameState.lives = 3;
+    GameState.maxTime = (selectedMode === 'easy') ? 25 : (selectedMode === 'med') ? 20 : 15;
     
-    updateHUD();
-    switchScreen('game');
-    nextQuestion();
+    document.getElementById('current-score').innerText = "0";
+    document.getElementById('lives-display').innerText = "❤️❤️❤️";
+    
+    showScreen('game-screen');
+    generateNewQuestion();
+}
+
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+// موتور تولید سوالات (پایه اول تا نهم)
+function generateNewQuestion() {
+    let q = "";
+    let ans = 0;
+    const m = GameState.mode;
+
+    if (m === 'easy') { // پایه اول تا سوم
+        let a = rand(1, 20), b = rand(1, 20);
+        if (Math.random() > 0.5) { q = `${a} + ${b}`; ans = a + b; }
+        else { q = `${Math.max(a,b)} - ${Math.min(a,b)}`; ans = Math.max(a,b) - Math.min(a,b); }
+    } 
+    else if (m === 'med') { // پایه چهارم تا ششم
+        let a = rand(2, 12), b = rand(2, 12);
+        let op = rand(1, 3);
+        if (op === 1) { q = `${a} × ${b}`; ans = a * b; }
+        else if (op === 2) { let p = a * b; q = `${p} ÷ ${a}`; ans = b; }
+        else { 
+            let c = rand(1, 10);
+            q = `${a} + ${b} - ${c}`; ans = a + b - c;
+        }
+    } 
+    else { // پایه هفتم تا نهم (سخت)
+        let type = rand(1, 4);
+        if (type === 1) { // توان
+            let base = rand(2, 9);
+            q = `${base}²`; ans = base * base;
+        } else if (type === 2) { // اعداد منفی
+            let a = rand(-10, 10), b = rand(-10, 10);
+            q = `(${a}) + (${b})`; ans = a + b;
+        } else if (type === 3) { // معادله ساده
+            let x = rand(2, 6);
+            let b = rand(1, 10);
+            let res = 2 * x + b;
+            q = `2x + ${b} = ${res} ⇒ x`; ans = x;
+        } else { // رادیکال
+            let roots = [4, 9, 16, 25, 36, 49, 64, 81, 100];
+            let r = roots[rand(0, 8)];
+            q = `√${r}`; ans = Math.sqrt(r);
+        }
+    }
+
+    GameState.correctAnswer = ans;
+    document.getElementById('math-question').innerText = q + " = ?";
+    createAnswerButtons(ans);
     startTimer();
 }
 
-// تایمر پیشرفته
-function startTimer() {
-    clearInterval(Game.timer);
-    Game.timer = setInterval(() => {
-        if (!Game.freezeActive) {
-            Game.time -= 0.1;
+function createAnswerButtons(correct) {
+    let choices = new Set([correct]);
+    while (choices.size < 4) {
+        choices.add(correct + rand(-5, 10));
+    }
+    
+    const grid = document.getElementById('answers-grid');
+    grid.innerHTML = "";
+    Array.from(choices).sort(() => Math.random() - 0.5).forEach(val => {
+        let btn = document.createElement('button');
+        btn.className = 'ans-btn';
+        btn.innerText = val;
+        btn.onclick = () => checkAnswer(val);
+        grid.appendChild(btn);
+    });
+}
+
+function checkAnswer(val) {
+    if (val === GameState.correctAnswer) {
+        GameState.score += (GameState.mode === 'hard' ? 30 : GameState.mode === 'med' ? 20 : 10);
+        document.getElementById('current-score').innerText = GameState.score;
+        generateNewQuestion();
+    } else {
+        GameState.lives--;
+        updateLivesUI();
+        if (GameState.lives <= 0) endGame("فرصت تمام شد!");
+        else {
+            // انیمیشن خطا
+            document.querySelector('.question-area').style.borderColor = "red";
+            setTimeout(() => document.querySelector('.question-area').style.borderColor = "", 300);
         }
+    }
+}
+
+function startTimer() {
+    clearInterval(GameState.timerObj);
+    GameState.timeLeft = GameState.maxTime;
+    const line = document.getElementById('timer-line');
+    
+    GameState.timerObj = setInterval(() => {
+        GameState.timeLeft -= 0.1;
+        let prc = (GameState.timeLeft / GameState.maxTime) * 100;
+        line.style.width = prc + "%";
         
-        const percent = (Game.time / Game.maxTime) * 100;
-        document.getElementById('timer-bar').style.width = percent + '%';
-        
-        if (Game.time <= 0) {
-            gameOver();
+        if (GameState.timeLeft <= 0) {
+            clearInterval(GameState.timerObj);
+            endGame("زمان تمام شد!");
         }
     }, 100);
 }
 
-// تولید عدد تصادفی
+function updateLivesUI() {
+    let h = "";
+    for(let i=0; i<GameState.lives; i++) h += "❤️";
+    document.getElementById('lives-display').innerText = h;
+}
+
+function endGame(msg) {
+    clearInterval(GameState.timerObj);
+    showScreen('over-screen');
+    document.getElementById('over-title').innerText = msg;
+    document.getElementById('final-score').innerText = GameState.score;
+    
+    // ذخیره رکورد
+    let key = "math_" + GameState.mode;
+    let oldBest = localStorage.getItem(key) || 0;
+    if (GameState.score > oldBest) {
+        localStorage.setItem(key, GameState.score);
+    }
+}
+
+function toggleHelp(show) {
+    document.getElementById('help-modal').style.display = show ? 'flex' : 'none';
+}
+
 const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-// موتور تولید سوال (فوق هوشمند)
-function nextQuestion() {
-    let q = "", a = 0;
-    const lvl = Game.level;
-
-    // سطح بندی سختی
-    if (lvl <= 5) { // جمع و تفریق
-        let n1 = rand(5, 20 + lvl*2), n2 = rand(2, 15);
-        if (Math.random() > 0.5) { q = `${n1} + ${n2}`; a = n1 + n2; }
-        else { q = `${n1} - ${n2}`; a = n1 - n2; }
-    } 
-    else if (lvl <= 10) { // ضرب و تقسیم
-        let n1 = rand(2, 9), n2 = rand(2, 9);
-        q = `${n1} × ${n2}`; a = n1 * n2;
-        if (lvl > 8 && Math.random() > 0.7) { // گهگاهی تقسیم
-            let prod = n1 * n2;
-            q = `${prod} ÷ ${n1}`; a = n2;
-        }
-    } 
-    else if (lvl <= 15) { // معادلات و اولویت
-        let x = rand(2, 10);
-        let b = rand(1, 20);
-        q = `${x}x + ${b} = ${x*2 + b} <br><small>x = ?</small>`;
-        a = 2; // جواب همیشه 2 است، فقط ظاهر پیچیده است (تریک)
-        // واقعی سازی:
-        let n1 = rand(2,5), n2 = rand(2,5), n3=rand(1,10);
-        q = `${n1} × ${n2} + ${n3}`; a = n1*n2+n3;
-    }
-    else { // سطح نابغه
-        let base = rand(2, 5);
-        q = `${base}² + ${rand(1,10)}`;
-        a = Math.pow(base, 2) + eval(q.split('+')[1]);
-    }
-
-    Game.correctAnswer = a;
-    document.getElementById('question-text').innerHTML = q;
-    generateOptions(a);
-    
-    // بازنشانی زمان بر اساس مرحله
-    if(!Game.freezeActive) {
-        Game.maxTime = Math.max(5, 12 - Math.floor(lvl/5));
-        Game.time = Game.maxTime;
-    }
-    
-    checkPowerUpAvailability();
-}
-
-function generateOptions(correct) {
-    let opts = new Set([correct]);
-    while (opts.size < 4) {
-        let fake = correct + rand(-10, 10);
-        if (fake !== correct && fake > 0) opts.add(fake);
-    }
-    
-    const container = document.getElementById('options-container');
-    container.innerHTML = '';
-    
-    Array.from(opts).sort(()=>Math.random()-0.5).forEach(opt => {
-        let btn = document.createElement('button');
-        btn.className = 'option-btn';
-        btn.innerText = opt;
-        btn.onclick = () => handleAnswer(btn, opt);
-        container.appendChild(btn);
-    });
-}
-
-function handleAnswer(btn, value) {
-    if (value === Game.correctAnswer) {
-        // درست
-        Game.combo++;
-        let bonus = Game.combo > 2 ? Game.combo * 5 : 0;
-        Game.score += (10 + bonus);
-        Game.level++;
-        Game.freezeActive = false; // لغو یخ بعد از پاسخ
-        
-        btn.classList.add('correct');
-        setTimeout(nextQuestion, 500);
-    } else {
-        // غلط
-        Game.combo = 0;
-        btn.classList.add('wrong');
-        navigator.vibrate(200); // لرزش گوشی
-        setTimeout(gameOver, 500);
-    }
-    updateHUD();
-}
-
-function updateHUD() {
-    document.getElementById('score').innerText = Game.score;
-    document.getElementById('level').innerText = Game.level;
-    document.getElementById('combo').innerText = 'x' + (Game.combo > 1 ? Game.combo : 1);
-}
-
-// پایان بازی
-function gameOver() {
-    clearInterval(Game.timer);
-    switchScreen('end');
-    document.getElementById('final-score').innerText = Game.score;
-    
-    if (Game.score > highScore) {
-        highScore = Game.score;
-        localStorage.setItem('mathMaster_highScore', highScore);
-        document.getElementById('best-score-display').innerText = highScore;
-        document.getElementById('new-record-msg').classList.remove('hidden');
-    } else {
-        document.getElementById('new-record-msg').classList.add('hidden');
-    }
-}
-
-// --- قابلیت های ویژه (Power-Ups) ---
-
-function checkPowerUpAvailability() {
-    // فعال سازی دکمه ها اگر امتیاز کافی باشد
-    const freezeBtn = document.getElementById('freeze-btn');
-    const hintBtn = document.getElementById('hint-btn');
-    
-    freezeBtn.disabled = Game.score < 50;
-    hintBtn.disabled = Game.score < 30;
-    
-    if(Game.score >= 50) freezeBtn.classList.add('active');
-    else freezeBtn.classList.remove('active');
-    
-    if(Game.score >= 30) hintBtn.classList.add('active');
-    else hintBtn.classList.remove('active');
-}
-
-function activateFreeze() {
-    if (Game.score >= 50) {
-        Game.score -= 50;
-        Game.freezeActive = true;
-        document.body.style.border = "5px solid cyan"; // افکت بصری
-        updateHUD();
-        checkPowerUpAvailability();
-        setTimeout(() => { document.body.style.border = "none"; }, 500);
-    }
-}
-
-function activateHint() {
-    if (Game.score >= 30) {
-        Game.score -= 30;
-        const opts = document.querySelectorAll('.option-btn');
-        let removed = 0;
-        opts.forEach(btn => {
-            if (parseInt(btn.innerText) !== Game.correctAnswer && removed < 2) {
-                btn.classList.add('disabled');
-                removed++;
-            }
-        });
-        updateHUD();
-        checkPowerUpAvailability();
-    }
-}
-
-// --- افکت پس زمینه ماتریکسی ---
-const canvas = document.getElementById('matrix-bg');
-const ctx = canvas.getContext('2d');
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-const katakana = '0123456789+-×÷=∑∫π';
-const fontSize = 16;
-const columns = canvas.width/fontSize;
-const drops = Array(Math.floor(columns)).fill(1);
-
-function drawMatrix() {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#0F0';
-    ctx.font = fontSize + 'px monospace';
-
-    for(let i = 0; i < drops.length; i++) {
-        const text = katakana.charAt(Math.floor(Math.random() * katakana.length));
-        ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-        if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-        drops[i]++;
-    }
-}
-setInterval(drawMatrix, 30);
-
-window.addEventListener('resize', () => {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-});
+loadBestScores();
