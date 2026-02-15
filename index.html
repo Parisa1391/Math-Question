@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>چالش ذهن برتر | طراحی: پریسا رستمی</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg-color: #0f172a;
+        --glass-bg: rgba(255, 255, 255, 0.1);
+        --glass-border: rgba(255, 255, 255, 0.2);
+        --primary: #3b82f6;
+        --success: #10b981;
+        --danger: #ef4444;
+        --text: #f8fafc;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+    body {
+        font-family: 'Vazirmatn', sans-serif;
+        background: radial-gradient(circle at 10% 20%, rgb(69, 86, 172) 0%, rgb(20, 20, 20) 90%);
+        color: var(--text);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        overflow: hidden;
+    }
+
+    /* ذرات پس زمینه */
+    .background-particles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+    }
+    .particle {
+        position: absolute;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+        animation: float 20s infinite linear;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+        50% { opacity: 1; }
+        100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+    }
+
+    .game-container {
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 2rem;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        text-align: center;
+        position: relative;
+        transition: transform 0.3s;
+    }
+
+    .header-info {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: #cbd5e1;
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 6px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 10px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%;
+        background: var(--success);
+        width: 100%;
+        transition: width 1s linear;
+    }
+
+    h2 { font-size: 1.5rem; margin-bottom: 5px; color: var(--primary); text-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+    h3 { font-size: 0.8rem; margin-bottom: 20px; opacity: 0.7; }
+
+    .question-box {
+        background: rgba(0,0,0,0.3);
+        padding: 20px;
+        border-radius: 16px;
+        margin-bottom: 20px;
+        font-size: 1.8rem;
+        font-weight: 900;
+        letter-spacing: 2px;
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid transparent;
+        transition: border-color 0.3s;
+    }
+
+    .options-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    button.option {
+        background: white;
+        color: #1e293b;
+        border: none;
+        padding: 15px;
+        font-size: 1.2rem;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    button.option:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2); }
+    button.option:active { transform: scale(0.95); }
+    
+    button.correct { background: var(--success) !important; color: white !important; }
+    button.wrong { background: var(--danger) !important; color: white !important; animation: shake 0.5s; }
+
+    #next-btn {
+        width: 100%;
+        margin-top: 20px;
+        padding: 15px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        display: none;
+        font-weight: bold;
+        box-shadow: 0 0 15px var(--primary);
+        animation: pulse 2s infinite;
+    }
+
+    .stats {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 25px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        font-size: 1.1rem;
+    }
+
+    /* انیمیشن‌ها */
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+
+    /* مودال پایان بازی */
+    #game-over {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(15, 23, 42, 0.95);
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        border-radius: 24px;
+        z-index: 10;
+    }
+    .restart-btn {
+        margin-top: 20px;
+        padding: 10px 30px;
+        background: var(--success);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        font-size: 1.2rem;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<div class="background-particles" id="particles"></div>
+
+<div class="game-container" id="game-box">
+    
+    <div class="header-info">
+        <span id="level-display">مرحله: 1</span>
+        <span>طراح: پریسا رستمی</span>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" id="timer-bar"></div>
+    </div>
+
+    <h2>نبرد ریاضی</h2>
+    <h3 id="difficulty-text">سطح: مقدماتی</h3>
+
+    <div class="question-box" id="question">
+        </div>
+
+    <div class="options-grid" id="answers">
+        </div>
+
+    <button id="next-btn">مرحله بعدی</button>
+
+    <div class="stats">
+        <span>امتیاز: <b id="score">0</b></span>
+        <span>جون: <b id="lives">❤️❤️❤️</b></span>
+    </div>
+
+    <div id="game-over">
+        <h1 style="color:var(--danger)">بازی تمام شد!</h1>
+        <p style="margin:10px 0; font-size:1.2rem">امتیاز نهایی: <span id="final-score"></span></p>
+        <button class="restart-btn" onclick="location.reload()">شروع مجدد</button>
+    </div>
+
+</div>
+
+<script>
+// تنظیمات بازی
+let state = {
+    level: 1,
+    score: 0,
+    lives: 3,
+    maxTime: 15,
+    currentTime: 15,
+    timerInterval: null,
+    isAnswered: false,
+    correctAnswer: 0
+};
+
+// تولید ذرات پس‌زمینه
+function createParticles() {
+    const container = document.getElementById('particles');
+    for(let i=0; i<20; i++){
+        let p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + '%';
+        p.style.width = p.style.height = (Math.random() * 10 + 2) + 'px';
+        p.style.animationDuration = (Math.random() * 10 + 10) + 's';
+        p.style.animationDelay = (Math.random() * 5) + 's';
+        container.appendChild(p);
+    }
+}
+
+// تولید عدد تصادفی
+const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+// منطق تولید سوال بر اساس مرحله
+function generateQuestion() {
+    let qText = "", ans = 0;
+    
+    // سطح بندی سختی
+    if (state.level <= 3) {
+        // جمع و تفریق ساده
+        let a = rand(5, 20), b = rand(1, 15);
+        if(Math.random() > 0.5) { qText = `${a} + ${b} = ?`; ans = a + b; }
+        else { qText = `${a} - ${b} = ?`; ans = a - b; }
+        document.getElementById('difficulty-text').innerText = "سطح: گرم کردن مغز";
+    } 
+    else if (state.level <= 7) {
+        // ضرب و معادله خطی ساده
+        let x = rand(2, 9), a = rand(2, 5), b = rand(1, 10);
+        let res = a * x + b;
+        qText = `<span dir="ltr">${a}x + ${b} = ${res}</span> <br><span style="font-size:1rem; color:#ccc">x = ?</span>`;
+        ans = x;
+        document.getElementById('difficulty-text').innerText = "سطح: معادلات خطی";
+    }
+    else {
+        // سخت: توان و عبارات پیچیده تر
+        let x = rand(2, 6);
+        let pow = 2;
+        let res = Math.pow(x, pow);
+        if(Math.random() > 0.5) {
+            qText = `<span dir="ltr">x² = ${res}</span> <br><span style="font-size:1rem; color:#ccc">x = ?</span>`;
+            ans = x;
+        } else {
+            let a = rand(3,9), b = rand(3,9);
+            qText = `${a} × ${b} + ${rand(1,10)} = ?`;
+            ans = eval(qText.split('=')[0]);
+        }
+        document.getElementById('difficulty-text').innerText = "سطح: نابغه ریاضی";
+    }
+
+    state.correctAnswer = ans;
+    document.getElementById('question').innerHTML = qText;
+    generateOptions(ans);
+}
+
+// تولید گزینه‌ها
+function generateOptions(correct) {
+    let opts = new Set();
+    opts.add(correct);
+    while(opts.size < 4) {
+        let fake = correct + rand(-5, 5);
+        if(fake !== correct) opts.add(fake);
+    }
+    
+    let optionsArray = Array.from(opts).sort(() => Math.random() - 0.5);
+    const ansDiv = document.getElementById("answers");
+    ansDiv.innerHTML = "";
+
+    optionsArray.forEach(opt => {
+        let btn = document.createElement("button");
+        btn.className = "option";
+        btn.innerText = opt;
+        btn.onclick = () => checkAnswer(btn, opt);
+        ansDiv.appendChild(btn);
+    });
+}
+
+// تایمر
+function startTimer() {
+    clearInterval(state.timerInterval);
+    state.currentTime = state.maxTime;
+    const bar = document.getElementById("timer-bar");
+    
+    state.timerInterval = setInterval(() => {
+        state.currentTime -= 0.1;
+        let pct = (state.currentTime / state.maxTime) * 100;
+        bar.style.width = pct + "%";
+
+        if(pct < 30) bar.style.background = "#ef4444"; // قرمز شدن در آخر
+        else bar.style.background = "#10b981";
+
+        if(state.currentTime <= 0) {
+            handleWrong(null, true);
+        }
+    }, 100);
+}
+
+// بررسی جواب
+function checkAnswer(btn, value) {
+    if(state.isAnswered) return;
+
+    if(value === state.correctAnswer) {
+        // جواب درست
+        state.isAnswered = true;
+        clearInterval(state.timerInterval);
+        btn.classList.add("correct");
+        state.score += (10 + state.level * 2); // امتیاز بیشتر در مراحل بالاتر
+        document.getElementById("score").innerText = state.score;
+        document.getElementById("next-btn").style.display = "block";
+        document.getElementById("question").style.borderColor = "#10b981";
+    } else {
+        // جواب غلط
+        handleWrong(btn, false);
+    }
+}
+
+function handleWrong(btn, isTimeout) {
+    state.lives--;
+    updateLives();
+    
+    if(btn) btn.classList.add("wrong");
+    
+    // لرزش کانتینر
+    const box = document.getElementById("game-box");
+    box.style.animation = "shake 0.4s ease";
+    setTimeout(() => box.style.animation = "", 400);
+
+    if(state.lives === 0) {
+        clearInterval(state.timerInterval);
+        document.getElementById("game-over").style.display = "flex";
+        document.getElementById("final-score").innerText = state.score;
+    } else if(isTimeout) {
+        // اگر زمان تمام شد اما جون داشت، می‌رود مرحله بعد با کسر جون
+        alert("زمان تمام شد! یک جان از دست دادید.");
+        nextLevel(false); 
+    }
+}
+
+function updateLives() {
+    let heart = "";
+    for(let i=0; i<state.lives; i++) heart += "❤️";
+    document.getElementById("lives").innerText = heart;
+}
+
+function nextLevel(incrementLevel = true) {
+    if(incrementLevel) state.level++;
+    state.isAnswered = false;
+    document.getElementById("next-btn").style.display = "none";
+    document.getElementById("level-display").innerText = "مرحله: " + state.level;
+    document.getElementById("question").style.borderColor = "transparent";
+    
+    // کاهش زمان در مراحل بالاتر برای سخت‌تر شدن
+    state.maxTime = Math.max(5, 15 - Math.floor(state.level / 3)); 
+    
+    generateQuestion();
+    startTimer();
+}
+
+// راه‌اندازی اولیه
+document.getElementById("next-btn").onclick = () => nextLevel(true);
+createParticles();
+generateQuestion();
+startTimer();
+
+</script>
+</body>
+</html>
