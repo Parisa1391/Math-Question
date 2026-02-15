@@ -1,98 +1,94 @@
 :root {
-    --bg: #0f172a;
     --primary: #00f2ff;
-    --accent: #f43f5e;
-    --glass: rgba(255, 255, 255, 0.05);
-    --font-math: 'Vazirmatn', sans-serif;
+    --secondary: #7000ff;
+    --danger: #ff0055;
+    --bg-dark: #020617;
+    --glass: rgba(255, 255, 255, 0.03);
+    --border: rgba(255, 255, 255, 0.1);
 }
 
-* { box-sizing: border-box; outline: none; }
+* { box-sizing: border-box; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
 body {
-    background: var(--bg);
-    color: white;
-    font-family: 'Vazirmatn', sans-serif;
-    margin: 0;
-    overflow: hidden;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    margin: 0; background: var(--bg-dark); color: white;
+    font-family: 'Vazirmatn', sans-serif; overflow: hidden;
+    height: 100vh; display: flex; justify-content: center; align-items: center;
 }
 
-#particle-container { position: fixed; width: 100%; height: 100%; z-index: -1; }
-
-.main-wrapper {
-    width: 90%; max-width: 450px;
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 40px;
-    padding: 30px;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-    position: relative;
+.quantum-bg {
+    position: fixed; width: 100%; height: 100%; z-index: -1;
+    background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #020617 100%);
 }
 
-.screen { display: none; flex-direction: column; gap: 20px; animation: fadeIn 0.4s; }
+.game-container {
+    width: 90%; max-width: 450px; height: 90vh;
+    background: var(--glass); backdrop-filter: blur(25px);
+    border: 1px solid var(--border); border-radius: 40px;
+    padding: 30px; position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.5);
+}
+
+.screen { display: none; flex-direction: column; height: 100%; }
 .screen.active { display: flex; }
 
-.main-title { font-family: 'Lalezar'; font-size: 3rem; text-align: center; margin: 0; }
+/* تایپوگرافی و افکت ماتریکس */
+h1 { font-family: 'Lalezar'; font-size: 3rem; text-align: center; margin: 0; color: white; }
 .neon-text { color: var(--primary); text-shadow: 0 0 20px var(--primary); }
-.dev-name { text-align: center; opacity: 0.6; font-size: 0.8rem; margin-top: -10px; }
+.subtitle { text-align: center; font-size: 0.8rem; opacity: 0.5; margin-top: -10px; }
 
-.records-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-.record-card { background: var(--glass); padding: 10px; border-radius: 15px; font-size: 0.7rem; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+/* کارت‌های امتیاز منو */
+.stats-panel { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 20px 0; }
+.stat-card { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 15px; text-align: center; border: 1px solid var(--border); }
+.stat-label { display: block; font-size: 0.6rem; opacity: 0.7; }
+.stat-value { font-weight: 900; color: var(--primary); }
 
-.play-trigger {
-    background: linear-gradient(135deg, #0ea5e9, #2563eb);
-    color: white; border: none; padding: 20px; border-radius: 20px;
-    font-family: 'Lalezar'; font-size: 1.8rem; cursor: pointer; transition: 0.3s;
-    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+/* نوار XP */
+.rank-box { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 20px; }
+.rank-info { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 8px; }
+.xp-bar-container { width: 100%; height: 8px; background: #334155; border-radius: 10px; overflow: hidden; }
+.xp-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); }
+
+/* دکمه اصلی */
+.main-btn {
+    background: linear-gradient(135deg, var(--secondary), #4c1d95);
+    border: none; padding: 20px; border-radius: 20px; color: white;
+    font-family: 'Lalezar'; font-size: 1.8rem; cursor: pointer; box-shadow: 0 10px 25px rgba(112, 0, 255, 0.4);
 }
-.play-trigger:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(37, 99, 235, 0.5); }
+.main-btn:hover { transform: translateY(-5px) scale(1.02); }
+.pulse { animation: pulseAnim 2s infinite; }
 
-/* مودال انتخاب سطح */
-.overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
-    display: none; justify-content: center; align-items: center; z-index: 100;
-    border-radius: 40px;
-}
-.modal-box { width: 90%; text-align: center; }
-.mode-grid { display: flex; flex-direction: column; gap: 15px; margin: 20px 0; }
-.m-btn {
-    padding: 15px; border-radius: 15px; border: none; color: white;
-    font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.2s;
-}
-.m-easy { background: #10b981; }
-.m-med { background: #f59e0b; }
-.m-hard { background: #ef4444; }
-.m-btn span { display: block; font-size: 0.7rem; opacity: 0.8; }
+/* بخش بازی */
+.hud { display: flex; justify-content: space-between; margin-bottom: 15px; }
+.hud-item { background: var(--glass); padding: 5px 15px; border-radius: 50px; font-size: 0.9rem; border: 1px solid var(--border); }
 
-/* HUD بازی */
-.game-hud { display: flex; justify-content: space-between; font-size: 0.8rem; }
-.hud-box { background: var(--glass); padding: 5px 12px; border-radius: 50px; }
+.timer-container { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
+.timer-fill { width: 100%; height: 100%; background: var(--primary); }
 
-.question-container {
-    background: #000; min-height: 140px; border-radius: 25px;
+.question-box {
+    flex: 1; background: rgba(0,0,0,0.3); border-radius: 30px;
     display: flex; justify-content: center; align-items: center;
-    font-size: 1.8rem; font-weight: 900; color: var(--primary);
-    border: 2px solid var(--primary); padding: 20px; text-align: center;
+    font-size: 2rem; font-weight: 900; color: white; margin-bottom: 20px;
+    border: 2px solid var(--primary); box-shadow: inset 0 0 20px rgba(0,242,255,0.1);
+    text-align: center; padding: 20px;
 }
 
-.options-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-.opt-btn {
-    padding: 20px; border-radius: 18px; border: none; background: white;
-    color: #0f172a; font-size: 1.4rem; font-weight: bold; cursor: pointer;
+.answers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+.ans-btn {
+    background: white; color: var(--bg-dark); border: none; padding: 20px;
+    border-radius: 20px; font-size: 1.5rem; font-weight: 900; cursor: pointer;
 }
+.ans-btn:active { transform: scale(0.9); }
 
-.power-bar { display: flex; gap: 10px; }
-.power-bar button {
-    flex: 1; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1);
-    background: var(--glass); color: white; font-size: 0.7rem; cursor: pointer;
-}
-.power-bar button:disabled { opacity: 0.3; }
+.shop-bar { display: flex; gap: 10px; }
+.shop-bar button { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--glass); color: white; font-size: 0.7rem; cursor: pointer; }
+.shop-bar button:disabled { opacity: 0.2; cursor: not-allowed; }
 
-.progress-wrap { width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; }
-#time-bar { height: 100%; width: 100%; background: var(--primary); transition: width 0.1s linear; }
+/* Overlay */
+.overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); display: none; justify-content: center; align-items: center; z-index: 10; border-radius: 40px; }
+.glass-modal { width: 85%; text-align: center; }
+.mode-opt { width: 100%; margin-bottom: 10px; padding: 15px; border-radius: 15px; border: none; color: white; cursor: pointer; text-align: right; }
+.e { background: #10b981; } .m { background: #3b82f6; } .h { background: #ef4444; }
+.mode-opt b { display: block; font-size: 1.2rem; }
+.mode-opt span { font-size: 0.7rem; opacity: 0.8; }
 
-@keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+@keyframes pulseAnim { 0% { box-shadow: 0 0 0 0 rgba(112, 0, 255, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(112, 0, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(112, 0, 255, 0); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
