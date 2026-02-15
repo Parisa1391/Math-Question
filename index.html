@@ -2,82 +2,74 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>لیگ ریاضی نوابغ | پریسا رستمی</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سوپر لیگ ریاضی | پریسا رستمی</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@300;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <canvas id="matrix-bg"></canvas>
+    <div class="stars-container" id="stars"></div>
 
-    <div class="app-container">
-        
-        <section id="home-screen" class="screen active">
-            <div class="logo-area">
-                <h1>∑ لیگ ریاضی <span>نوابغ</span></h1>
-                <p>طراحی و توسعه: پریسا رستمی</p>
-            </div>
+    <div class="app-card">
+        <section id="menu-screen" class="screen active">
+            <h1 class="glow-text">لیگ ریاضی <span>نهم</span></h1>
+            <p class="author">توسعه دهنده: پریسا رستمی</p>
             
-            <div class="leaderboard-box">
-                <h3>🏆 برترین رکورد شما</h3>
-                <div class="high-score-display" id="best-score-display">0</div>
+            <div class="stats-grid">
+                <div class="stat-item">🥇 آسان: <span id="best-easy">0</span></div>
+                <div class="stat-item">🥇 متوسط: <span id="best-med">0</span></div>
+                <div class="stat-item">🥇 سخت: <span id="best-hard">0</span></div>
             </div>
 
-            <button class="btn btn-primary" onclick="startGame()">شروع چالش</button>
-            <button class="btn btn-secondary" onclick="showHelp()">راهنما</button>
+            <div class="mode-selector">
+                <button class="mode-btn easy" onclick="initGame('easy')">سطح ساده (پایه ۱-۳)</button>
+                <button class="mode-btn med" onclick="initGame('med')">سطح متوسط (پایه ۴-۶)</button>
+                <button class="mode-btn hard" onclick="initGame('hard')">سطح نابغه (پایه ۷-۹)</button>
+            </div>
+
+            <button class="help-link" onclick="toggleHelp(true)">راهنمای بازی</button>
         </section>
 
         <section id="game-screen" class="screen">
-            <div class="hud">
-                <div class="hud-item">
-                    <span class="label">امتیاز</span>
-                    <span class="value" id="score">0</span>
-                </div>
-                <div class="hud-item">
-                    <span class="label">مرحله</span>
-                    <span class="value" id="level">1</span>
-                </div>
-                <div class="hud-item">
-                    <span class="label">کمبو</span>
-                    <span class="value" id="combo">x1</span>
-                </div>
+            <div class="game-header">
+                <div class="info-tag">امتیاز: <span id="current-score">0</span></div>
+                <div class="info-tag" id="lives-display">❤️❤️❤️</div>
             </div>
 
-            <div class="timer-container">
-                <div class="timer-bar" id="timer-bar"></div>
+            <div class="timer-box">
+                <div class="timer-line" id="timer-line"></div>
             </div>
 
-            <div class="powerups">
-                <button class="power-btn" id="freeze-btn" onclick="activateFreeze()" disabled>
-                    ❄️ توقف زمان (50 سکه)
-                </button>
-                <button class="power-btn" id="hint-btn" onclick="activateHint()" disabled>
-                    💣 حذف گزینه (30 سکه)
-                </button>
+            <div class="question-area">
+                <div id="math-question" dir="ltr"></div>
             </div>
 
-            <div class="question-card">
-                <div id="question-text">2 + 2</div>
-            </div>
-
-            <div class="options-grid" id="options-container">
-                </div>
+            <div class="answers-grid" id="answers-grid"></div>
         </section>
 
-        <section id="game-over-screen" class="screen">
-            <h2 class="danger-text">بازی تمام شد!</h2>
-            
-            <div class="result-box">
-                <p>امتیاز نهایی</p>
+        <section id="over-screen" class="screen">
+            <h2 id="over-title">وقت تمام شد!</h2>
+            <div class="final-score-circle">
+                <small>امتیاز نهایی</small>
                 <h1 id="final-score">0</h1>
             </div>
-
-            <p id="new-record-msg" class="hidden">🎉 رکورد جدید ثبت شد! 🎉</p>
-
-            <button class="btn btn-primary" onclick="location.reload()">تلاش مجدد</button>
+            <button class="mode-btn med" onclick="location.reload()">بازگشت به منو</button>
         </section>
+    </div>
 
+    <div id="help-modal" class="modal">
+        <div class="modal-content">
+            <h3>راهنمای بازی</h3>
+            <p>به دنیای ریاضی خوش آمدی! این برنامه برای تقویت ذهن از پایه اول تا نهم طراحی شده.</p>
+            <ul>
+                <li><strong>سطح ساده:</strong> تمرکز بر سرعت در محاسبات اولیه.</li>
+                <li><strong>سطح متوسط:</strong> ضرب و تقسیم و اولویت‌های ریاضی.</li>
+                <li><strong>سطح سخت:</strong> توان، جذر و معادلات پیچیده نهم.</li>
+            </ul>
+            <p>با هر پاسخ درست امتیاز می‌گیری و رکوردت ثبت می‌شه. مراقب قلب‌هات باش!</p>
+            <button class="mode-btn easy" onclick="toggleHelp(false)">فهمیدم</button>
+        </div>
     </div>
 
     <script src="script.js"></script>
